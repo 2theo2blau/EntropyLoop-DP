@@ -32,7 +32,8 @@
 
 // ADC clock divider
 // 0 = free running at 96 clk_adc cycles/conversion = 500 kSPS w/ clk_adc @ 48 MHz
-#define ADC_CLKDIV 0.0f
+// 0.0f = 500 kSPS, 99.0f = 480 kSPS
+#define ADC_CLKDIV 99.0f
 
 // Health Test stuff
 #define H_ASSUMED_BITS 1.0f
@@ -259,6 +260,11 @@ void core1_entry(void) {
 
 // CORE 0: DMA servicing
 int main(void) {
+    // force SMPS into PWM (continuous) mode — kills PFM ripple on the ADC
+    gpio_init(23);
+    gpio_set_dir(23, GPIO_OUT);
+    gpio_put(23, 1); // 1 = PWM, 0 = PFM
+    
     vreg_set_voltage(VREG_VOLTAGE_1_25);
     sleep_ms(10);
     set_sys_clock_khz(TARGET_FREQ_KHZ, true);
